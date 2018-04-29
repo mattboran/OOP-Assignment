@@ -114,15 +114,15 @@ the following methods.
 *************************************************************/
 
 
-interface SetOf<T extends LessThanOrEqualTo> {
-  public T get();
-  public void add(T e);
-  public boolean empty();
-  public boolean member();
-  public <E extends SetOf<T>> boolean subset(E e);
-  public <E extends SetOf<T>> E union(E e);
-  public <E extends SetOf<T>> E intersection(E e);
-  public <E extends SetOf<T>> E difference(E e);
+interface SetOf<T extends LessThanOrEqualTo<T>> extends Iterable<T>, LessThanOrEqualTo<SetOf<T>> {
+  T get();
+  void add(T e);
+  boolean empty();
+  boolean member(T e);
+  boolean subset(SetOf<T> e);
+  SetOf<T> union(SetOf<T> e);
+  SetOf<T> intersection(SetOf<T> e);
+  SetOf<T> difference(SetOf<T> e);
 }
 /*************************************************************
 
@@ -174,8 +174,8 @@ about ASet<T>.
 
 ************************************************************/
 
-class ASet<T extends LessThanOrEqualTo> implements LessThanOrEqualTo<T>, SetOf<T>, Iterable<T>{
-  ArrayList<T> internalList;
+class ASet<T extends LessThanOrEqualTo<T>> implements SetOf<T> {
+  public ArrayList<T> internalList;
 
   public ASet() {
     ArrayList<T> internalList = new ArrayList<T>();
@@ -205,7 +205,7 @@ class ASet<T extends LessThanOrEqualTo> implements LessThanOrEqualTo<T>, SetOf<T
     return false;
   }
 
-  public boolean subset(ASet<T> e) {
+  public boolean subset(SetOf<T> e) {
     int elems = internalList.size();
     for (T externalItem: e) {
       boolean contains = false;
@@ -219,15 +219,15 @@ class ASet<T extends LessThanOrEqualTo> implements LessThanOrEqualTo<T>, SetOf<T
     return true;
   }
 
-  public boolean lessThan(ASet<T> e) {
+  public boolean lessThan(SetOf<T> e) {
     return (e.subset(this) && !this.subset(e));
   }
 
-  public boolean equalTo(ASet<T> e) {
+  public boolean equalTo(SetOf<T> e) {
     return (e.subset(this) && this.subset(e));
   }
 
-  public ASet<T> union(ASet<T> e) {
+  public SetOf<T> union(SetOf<T> e) {
     ASet<T> newSet = new ASet<T>();
     for (T item : this.internalList)
       newSet.add(item);
@@ -237,7 +237,7 @@ class ASet<T extends LessThanOrEqualTo> implements LessThanOrEqualTo<T>, SetOf<T
     return newSet;
   }
 
-  public ASet<T> intersection(ASet<T> e) {
+  public SetOf<T> intersection(SetOf<T> e) {
     ASet<T> newSet = new ASet<T>();
     for (T internalItem : this.internalList) {
       for (T externalItem : e) {
@@ -248,7 +248,7 @@ class ASet<T extends LessThanOrEqualTo> implements LessThanOrEqualTo<T>, SetOf<T
     return newSet;
   }
 
-  public ASet<T> difference(ASet<T> e) {
+  public SetOf<T> difference(SetOf<T> e) {
     ASet<T> newSet = new ASet<T>();
     for (T internalItem : this.internalList) {
       boolean contains = false;
@@ -268,7 +268,7 @@ class ASet<T extends LessThanOrEqualTo> implements LessThanOrEqualTo<T>, SetOf<T
   public String toString() {
     String output = "ASet contains: [\n";
     for (T item : this.internalList) {
-      output += (item.toString() + " ");
+      output += item.toString();
     }
     return output + "\n].";
   }
@@ -293,11 +293,27 @@ Implement a very simple class, A, that implements LessThanOrEqualTo, such that
 
  - You should override the toString() method so that an A object prints something sensible.
    For example, "System.out.println(new A(3)) should print something like "A[3]".
-
+Set
 *************************************************************/
+class A implements LessThanOrEqualTo<A> {
+  public int a;
 
+  public A(int e) {
+    a = e;
+  }
 
-// class A ...
+  public boolean lessThan(A e) {
+    return this.a < e.a;
+  }
+
+  public boolean equalTo(A e) {
+    return this.a == e.a;
+  }
+
+  public String toString() {
+    return "A[" + a + "]";
+  }
+}
 
 /*************************************************************
 
@@ -319,8 +335,19 @@ Implement a simple class B that derives from A, such that:
 
 *************************************************************/
 
-// class B...
+class B extends A implements LessThanOrEqualTo<A> {
+  public int b, c;
 
+  public B(int x, int y) {
+    super(x + y);
+    b = x;
+    c = y;
+  }
+
+  public String toString() {
+    return "B[" + this.b + ", " + this.c + "]";
+  }
+}
 
 /*************************************************************
 
@@ -347,34 +374,39 @@ Create a class Part1 that contains the following:
   below. Do not change the code in test() or main().
 
 ************************************************************/
-class Part1 {
-  public static void main() {
-    // ASet<Integer> s = new ASet<Integer>();
-    // ASet<Integer> t = new ASet<Integer>();
-    // s.add(0);
-    // s.add(1);
-    // t.add(1);
-    // t.add(2);
-    // if (t.subset(s)){
-    //   System.out.println("s is a subset of t");
-    // }
-    // if (s.subset(t)) {
-    //   System.out.println("t is a subset of s");
-    // }
-    // System.out.println(s.toString());
-    // System.out.println(t.toString());
-  }
-}
-
 // class Part1 {
+//   public static void main() {
+//     ASet<Integer> s = new ASet<Integer>();
+//     ASet<Integer> t = new ASet<Integer>();
+//     s.add(0);
+//     s.add(1);
+//     t.add(1);
+//     t.add(2);
+//     if (t.subset(s)){
+//       System.out.println("s is a subset of t");
+//     }
+//     if (s.subset(t)) {
+//       System.out.println("t is a subset of s");
+//     }
+//     System.out.println(s.toString());
+//     System.out.println(t.toString());
+//   }
+// }
 
-
-    // You can define helper procedures here, if you like.
-
-
+class Part1 {
     //Define powerSet() here
+    static ASet<SetOf<T>> powerSet( s1) {
+      // fun pow [] = [[]]
+      //  |  pow (x::xs) = let val powxs = pow xs
+      //                   in (map (fn mem => x::mem) powxs) @ powxs
+      //                   end
+      // Hint: In your Java code, you can use get() to pick an element x out of the set,
+      // use difference to compute xs (i.e. the set without x), and union insread of @.
+      ASet<ASet<T>> newSet = new ASet<ASet<T>>();
 
-    // static ... powerSet(...) ...
+
+    }
+
 
 
 /*************************************************************
@@ -396,39 +428,38 @@ s1.equalTo(s1.union(s1)) is true
 
 ************************************************************/
 
-//     static void test() {
-// 	SetOf<A> s1 = new ASet<A>();
-// 	for(int i = 0; i < 6; i += 2) {
-// 	    s1.add(new A(i));
-// 	    s1.add(new A(i*2));
-// 	}
-// 	System.out.println("s1 = "+ s1);
-// 	System.out.println("pow(s1) =" + powerSet(s1));
-//
-// 	SetOf<A> s2 = new ASet<A>();
-// 	s2.add(new B(1,2));
-// 	s2.add(new B(2,2));
-// 	s2.add(new B(3,3));
-// 	System.out.println("s2 = " + s2);
-// 	System.out.println("s1.union(s2) = " + s1.union(s2));
-// 	System.out.println("s1.difference(s2) = " + s1.difference(s2));
-// 	System.out.println("s1.intersection(s2) = " + s1.intersection(s2));
-// 	SetOf<A> s3 = s1.difference(s2);
-// 	System.out.println("s3 = " + s3);
-// 	System.out.println("s3.lessThan(s1) is " + s3.lessThan(s1));
-// 	System.out.println("s1.subset(s1) is " + s1.subset(s1));
-// 	System.out.println("s1.lessThan(s1) is " + s1.lessThan(s1));
-// 	System.out.println("s1.equalTo(s1.union(s1)) is " + s1.equalTo(s1.union(s1)));
-// 	SetOf<A> s4 = new ASet<A>();
-// 	s4.add(new A(3));
-// 	s4.add(new A(4));
-// 	s4.add(new A(6));
-// 	System.out.println(s2 + " equalTo " + s4 + " is " + s2.equalTo(s4));
-//     }
-//
-//
-//     public static void main(String[] args) {
-// 	test();
-//     }
-// }
+  static void test() {
+    SetOf<A> s1 = new ASet<A>();
+    for(int i = 0; i < 6; i += 2) {
+      s1.add(new A(i));
+      s1.add(new A(i*2));
+  	}
+  	System.out.println("s1 = "+ s1);
+  	System.out.println("pow(s1) =" + powerSet(s1));
+
+  	SetOf<A> s2 = new ASet<A>();
+  	s2.add(new B(1,2));
+  	s2.add(new B(2,2));
+  	s2.add(new B(3,3));
+  	System.out.println("s2 = " + s2);
+  	System.out.println("s1.union(s2) = " + s1.union(s2));
+  	System.out.println("s1.difference(s2) = " + s1.difference(s2));
+  	System.out.println("s1.intersection(s2) = " + s1.intersection(s2));
+  	SetOf<A> s3 = s1.difference(s2);
+  	System.out.println("s3 = " + s3);
+  	System.out.println("s3.lessThan(s1) is " + s3.lessThan(s1));
+  	System.out.println("s1.subset(s1) is " + s1.subset(s1));
+  	System.out.println("s1.lessThan(s1) is " + s1.lessThan(s1));
+  	System.out.println("s1.equalTo(s1.union(s1)) is " + s1.equalTo(s1.union(s1)));
+  	SetOf<A> s4 = new ASet<A>();
+  	s4.add(new A(3));
+  	s4.add(new A(4));
+  	s4.add(new A(6));
+  	System.out.println(s2 + " equalTo " + s4 + " is " + s2.equalTo(s4));
+  }
+
+  public static void main(String[] args) {
+     test();
+  }
+}
 //
