@@ -178,7 +178,7 @@ class ASet<T extends LessThanOrEqualTo<T>> implements SetOf<T> {
   public ArrayList<T> internalList;
 
   public ASet() {
-    ArrayList<T> internalList = new ArrayList<T>();
+    this.internalList = new ArrayList<T>();
   }
 
   public T get() {
@@ -266,11 +266,11 @@ class ASet<T extends LessThanOrEqualTo<T>> implements SetOf<T> {
   }
 
   public String toString() {
-    String output = "ASet contains: [\n";
+    String output = "[";
     for (T item : this.internalList) {
-      output += item.toString();
+      output += (item.toString() + ", ");
     }
-    return output + "\n].";
+    return output + "]";
   }
 }
 
@@ -345,7 +345,7 @@ class B extends A implements LessThanOrEqualTo<A> {
   }
 
   public String toString() {
-    return "B[" + this.b + ", " + this.c + "]";
+    return "B(" + this.b + ", " + this.c + ")";
   }
 }
 
@@ -395,16 +395,39 @@ Create a class Part1 that contains the following:
 
 class Part1 {
     //Define powerSet() here
-    static ASet<SetOf<T>> powerSet( s1) {
+
+    static <T extends LessThanOrEqualTo<T>> SetOf<SetOf<T>> mapCons(SetOf<T> x, SetOf<SetOf<T>> mem) {
+      SetOf<SetOf<T>> newSet = new ASet<SetOf<T>>();
+      if (mem.empty()) {
+        newSet.add(new ASet<T>());
+        return newSet;
+      }
+      for (SetOf<T> t : mem) {
+        newSet.add(t.union(x));
+      }
+      return newSet;
+    }
+
+    static <T extends LessThanOrEqualTo<T>> SetOf<SetOf<T>> powerSet(SetOf<T> s1) {
       // fun pow [] = [[]]
       //  |  pow (x::xs) = let val powxs = pow xs
       //                   in (map (fn mem => x::mem) powxs) @ powxs
       //                   end
       // Hint: In your Java code, you can use get() to pick an element x out of the set,
       // use difference to compute xs (i.e. the set without x), and union insread of @.
-      ASet<ASet<T>> newSet = new ASet<ASet<T>>();
-
-
+      // Note: this is like List<List<T>> newList = new ArrayList<List<T>>();
+      SetOf<SetOf<T>> newSet = new ASet<SetOf<T>>();
+      if (s1.empty()) {
+        newSet.add(new ASet<T>());
+        return newSet;
+      }
+      T xval = s1.get();
+      SetOf<T> x = new ASet<T>();
+      x.add(xval);
+      SetOf<T> xs = s1.difference(x);
+      SetOf<SetOf<T>> powxs =  powerSet(xs);
+      powxs = mapCons(x, powxs).union(powxs);
+      return newSet.union(powxs);
     }
 
 

@@ -3,52 +3,64 @@
 // (1) Instances of Tree are covariantly subtyped, i.e. if B is a subtype of A, then
 //     Tree[B] is a subtype of Tree[A].
 // (2) The method, map, is defined for all trees, where map takes a function f as a parameter
-//     and returns a tree resulting from applying f to each value associated with a 
+//     and returns a tree resulting from applying f to each value associated with a
 //     Leaf or Node in the tree. This is essentially the same as the mapTree you wrote in ML.
 //     Hint: No code for map is needed here (other than the declaration of its type).
 
-abstract class Tree[...] ...  // This definition should be roughly 3 lines, including 
-                              // closing "}"
+abstract class Tree[+T] {
+  def map[R](f: T => R): Tree[R]
+}
 
-  
 // Define a generic case class Leaf, parameterized by a type T, such that:
 // (1) Leaf[T] is a subtype of Tree[T]
-// (2) Leaf[T] takes a parameter x of type T. That is, a Leaf[T] has a value of type T 
+// (2) Leaf[T] takes a parameter x of type T. That is, a Leaf[T] has a value of type T
 //     associated with it.
 // (3) The toString() method in Leaf[T] is overriden to print something sensible,
 //     that includes the value of x.
 // (4) The map method (see class Tree[], above) is overridden.
 
-case class Leaf[...]... // Roughly 4 lines
+case class Leaf[T](x: T) extends Tree[T] {
+  val internal: T = x
+  override def toString(): String = "Leaf of " + x
+  override def map[R](f: T => R): Leaf[R] = Leaf(f(internal))
+}
 
 
 // Define a generic case class Node, parameterized by a type T, such that:
 // (1) Node[T] is a subtype of Tree[T]
 // (2) Leaf[T] takes a parameter x of type T and a parameter children that is
-//     a list of Tree[T]'s.  That is, like in the ML assignment, 
+//     a list of Tree[T]'s.  That is, like in the ML assignment,
 // (3) The toString() method in Leaf[T] is overriden to print something sensible,
 //     that includes the value of x.
 // (4) The map method (see class Tree[], above) is overridden.
-//     Hint:  In defining the map method for Node[T], you can use the 
-//     built-in map method for the List[] class. 
+//     Hint:  In defining the map method for Node[T], you can use the
+//     built-in map method for the List[] class.
 //     (see http://www.scala-lang.org/api/2.11.8/#scala.collection.immutable.List)
 
 
-case class Node[...]...  // Roughly 4 lines 
-
-
+case class Node[T](x: T, children: List[Tree[T]]) extends Tree[T] {
+  val internal: T = x
+  var childList: List[Tree[T]] = children
+  override def toString(): String = "Node("+ x + ","+childList+ ")"
+  override def map[R](f: T => R): Node[R] = Node(f(internal), childList.map{_.map(f)})
+}  
 
 // Define a simple class A such that:
 // (1) It takes a parameter x of type Int
 // (2) It defines a method, value, that returns the value of x
-// (3) It define a + method (i.e. the name of the method is "+") 
+// (3) It define a + method (i.e. the name of the method is "+")
 //     that takes another A object, other, as a parameter and returns a
 //     new A object created with the result of adding this.value and
 //     other.value together.
-// (4) it overrides the toString method to print something sensible, 
+// (4) it overrides the toString method to print something sensible,
 //     showing x (see the sample output below).
 
-class A(x:Int) ...  // Roughly 5 lines
+class A(x:Int) {
+  val internal = x
+  def value(): Int = internal
+  def +(other: A): A = new A(this.value + other.value)
+  override def toString(): String = "A["+this.value+"]"
+}  // Roughly 5 lines
 
 // Define a simple class B such that:
 // (1) B is a subtype of A.
@@ -57,13 +69,16 @@ class A(x:Int) ...  // Roughly 5 lines
 // (4) it overrides the toString method to print something sensible,
 //     showing x and y (see the sample output below).
 
-class B(x:Int, y:Int) // Roughly 4 lines
+class B(x:Int, y:Int) extends A(x+y){
+  override def value(): Int = x + y
+  override def toString(): String = "B("+x+", "+y+")"
+}// Roughly 4 lines
 
 
 
-// Define a singleton class named Part2 that defines a several functions, 
+// Define a singleton class named Part2 that defines a several functions,
 // As described below.
-    
+
 object Part2 {
 
 //  Define that method breadthFirst that, for any type T, takes a
@@ -83,50 +98,50 @@ object Part2 {
 //   end
 
 
-  def breadthFirst ... // Roughly 9 lines
+  // def breadthFirst ... // Roughly 9 lines
 
 
-// Define the function reduce, which like the reduce function you wrote for the 
+// Define the function reduce, which like the reduce function you wrote for the
 // ML assignment, takes a function f, a value b, and a list L and:
 //  - if L is empty, returns b.
-//  - otherwise, assuming L is a list of the form List(x1, x2, ..., xn), 
-//    returns f(x1,f(x2,...f(xn,b)...)))).  
+//  - otherwise, assuming L is a list of the form List(x1, x2, ..., xn),
+//    returns f(x1,f(x2,...f(xn,b)...)))).
 // Be sure to make reduce as polymorphic as possible.
 
-  def reduce[...]...  // Roughly 4 lines
+  // def reduce[...]...  // Roughly 4 lines
 
 
-// Define the function sumTreeA, which takes a parameter of type Tree[A] 
+// Define the function sumTreeA, which takes a parameter of type Tree[A]
 // and returns the sum of all the A values found at the leaves and nodes in the tree.
-// The return type (the sum) should be an object of type A.  Note that, in order to 
+// The return type (the sum) should be an object of type A.  Note that, in order to
 // call sumTreeA on a Tree[B], covariant subtyping on instances of Tree[] is required,
 // as specified above.
 // You should use the map method of the List class and use the above reduce
 // function.
 
-  def sumTreeA(t: Tree[A]) ... // Roughly 4 lines
-  }
+  // def sumTreeA(t: Tree[A]) ... // Roughly 4 lines
+  // }
 
 // Leave this main procedure as is.  The output when you run the program should be similar
 // to what is shown below.
 
   def main(args: Array[String]) {
-    val t1 = Node(new A(10), List(Node(new A(9), List(Leaf(new A(7)), 
-                                  Leaf(new A(6)))), Node(new A(8), 
+    val t1 = Node(new A(10), List(Node(new A(9), List(Leaf(new A(7)),
+                                  Leaf(new A(6)))), Node(new A(8),
                                   List(Leaf(new A(5)), Leaf(new A(4))))))
     println("t1 = "+t1)
-    println("breadthFirst(t1) =" + breadthFirst(t1))
-    println("sumTreeA(t1) = " + sumTreeA(t1));
-    val t2 = t1.map((a:A)=>new A(a.value*2))
-    println("t2 = "+t2)
-    println("breadthFirst(t2) =" + breadthFirst(t2))
-    println("sumTreeA(t2) = " + sumTreeA(t2));
-    val t3 = Node(new B(5,5), List(Node(new B(5,4), List(Leaf(new B(3,4)), 
-                                   Leaf(new B(1,5)))), Node(new B(4,4), 
-                                   List(Leaf(new B(3,2)), Leaf(new B(4,0))))))
-    println("t3 = "+t3)
-    println("breadthFirst(t3) =" + breadthFirst(t3))
-    println("sumTreeA(t3) = " + sumTreeA(t3));
+    // println("breadthFirst(t1) =" + breadthFirst(t1))
+    // println("sumTreeA(t1) = " + sumTreeA(t1));
+    // val t2 = t1.map((a:A)=>new A(a.value*2))
+    // println("t2 = "+t2)
+    // println("breadthFirst(t2) =" + breadthFirst(t2))
+    // println("sumTreeA(t2) = " + sumTreeA(t2));
+    // val t3 = Node(new B(5,5), List(Node(new B(5,4), List(Leaf(new B(3,4)),
+    //                                Leaf(new B(1,5)))), Node(new B(4,4),
+    //                                List(Leaf(new B(3,2)), Leaf(new B(4,0))))))
+    // println("t3 = "+t3)
+    // println("breadthFirst(t3) =" + breadthFirst(t3))
+    // println("sumTreeA(t3) = " + sumTreeA(t3));
   }
 
 
@@ -143,5 +158,3 @@ object Part2 {
 // sumTreeA(t3) = A(49)
 
 }
-
-
