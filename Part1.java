@@ -268,7 +268,7 @@ class ASet<T extends LessThanOrEqualTo<T>> implements SetOf<T> {
   public String toString() {
     String output = "[";
     for (T item : this.internalList) {
-      output += (item.toString() + ", ");
+      output += (item.toString() + " ");
     }
     return output + "]";
   }

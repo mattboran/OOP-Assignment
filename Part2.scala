@@ -43,7 +43,7 @@ case class Node[T](x: T, children: List[Tree[T]]) extends Tree[T] {
   var childList: List[Tree[T]] = children
   override def toString(): String = "Node("+ x + ","+childList+ ")"
   override def map[R](f: T => R): Node[R] = Node(f(internal), childList.map{_.map(f)})
-}  
+}
 
 // Define a simple class A such that:
 // (1) It takes a parameter x of type Int
@@ -97,9 +97,18 @@ object Part2 {
 //      breadth [tr] []
 //   end
 
-
-  // def breadthFirst ... // Roughly 9 lines
-
+  def breadthFirst[T](t: Tree[T]): List[T] = {
+      def breadth[T](trees: List[Tree[T]], values: List[T]): List[T] =
+          trees match {
+              case Nil => values
+              case (Leaf(x)::rest) =>
+                  breadth(rest, values ::: List(x))
+              case (Node(x, children)::rest) =>
+                  breadth(rest ::: children, values ::: List(x))
+          }
+      var values: List[T] = List[T]()
+      breadth(List(t), values)
+  }
 
 // Define the function reduce, which like the reduce function you wrote for the
 // ML assignment, takes a function f, a value b, and a list L and:
@@ -108,7 +117,12 @@ object Part2 {
 //    returns f(x1,f(x2,...f(xn,b)...)))).
 // Be sure to make reduce as polymorphic as possible.
 
-  // def reduce[...]...  // Roughly 4 lines
+    def reduce[T, R](f: (T, R) => R, b: R, L: List[T]): R = {
+        L match {
+            case Nil => b
+            case x::xs => f(x, reduce(f, b, xs))
+        }
+    }
 
 
 // Define the function sumTreeA, which takes a parameter of type Tree[A]
@@ -119,8 +133,13 @@ object Part2 {
 // You should use the map method of the List class and use the above reduce
 // function.
 
-  // def sumTreeA(t: Tree[A]) ... // Roughly 4 lines
-  // }
+  def sumTreeA(t: Tree[A]): A = {
+      t match {
+          case Leaf(x) => x
+          case Node(x, children) =>
+            reduce((a: A, b: A)=> a + b, x, children.map(sumTreeA))
+      }
+  }
 
 // Leave this main procedure as is.  The output when you run the program should be similar
 // to what is shown below.
@@ -130,18 +149,18 @@ object Part2 {
                                   Leaf(new A(6)))), Node(new A(8),
                                   List(Leaf(new A(5)), Leaf(new A(4))))))
     println("t1 = "+t1)
-    // println("breadthFirst(t1) =" + breadthFirst(t1))
-    // println("sumTreeA(t1) = " + sumTreeA(t1));
-    // val t2 = t1.map((a:A)=>new A(a.value*2))
-    // println("t2 = "+t2)
-    // println("breadthFirst(t2) =" + breadthFirst(t2))
-    // println("sumTreeA(t2) = " + sumTreeA(t2));
-    // val t3 = Node(new B(5,5), List(Node(new B(5,4), List(Leaf(new B(3,4)),
-    //                                Leaf(new B(1,5)))), Node(new B(4,4),
-    //                                List(Leaf(new B(3,2)), Leaf(new B(4,0))))))
-    // println("t3 = "+t3)
-    // println("breadthFirst(t3) =" + breadthFirst(t3))
-    // println("sumTreeA(t3) = " + sumTreeA(t3));
+    println("breadthFirst(t1) =" + breadthFirst(t1))
+    println("sumTreeA(t1) = " + sumTreeA(t1));
+    val t2 = t1.map((a:A)=>new A(a.value*2))
+    println("t2 = "+t2)
+    println("breadthFirst(t2) =" + breadthFirst(t2))
+    println("sumTreeA(t2) = " + sumTreeA(t2));
+    val t3 = Node(new B(5,5), List(Node(new B(5,4), List(Leaf(new B(3,4)),
+                                   Leaf(new B(1,5)))), Node(new B(4,4),
+                                   List(Leaf(new B(3,2)), Leaf(new B(4,0))))))
+    println("t3 = "+t3)
+    println("breadthFirst(t3) =" + breadthFirst(t3))
+    println("sumTreeA(t3) = " + sumTreeA(t3));
   }
 
 
